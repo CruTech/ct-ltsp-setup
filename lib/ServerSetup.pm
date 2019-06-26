@@ -26,6 +26,7 @@ use Exporter::Shiny qw(
 
     install
     install_chroot
+    where
 
     edit_file
 );
@@ -154,6 +155,15 @@ sub install_chroot {
     my ($cmd) = $check->(@_);
 
     [qw(ltsp-chroot -m apt-get --yes install), @$cmd]
+}
+
+# Include commands if predicate is true
+sub where {
+    state $check = compile( CodeRef, slurpy ArrayRef[Any] );
+    my ($predicate, $commands) = $check->(@_);
+
+    return $commands->@* if $predicate->();
+    ()
 }
 
 #

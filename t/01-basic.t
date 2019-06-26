@@ -18,6 +18,7 @@ use ServerSetup qw(
 
     install
     install_chroot
+    where
 
     edit_file
 );
@@ -56,6 +57,9 @@ is is_err(command_executor( [{}], undef)->[0]),                         1, "Exec
 is join(' ', @{install('foo')}), 'apt-get --yes install foo', 'install macro for apt-get';
 
 is join(' ', @{install_chroot('foo')}), 'ltsp-chroot -m apt-get --yes install foo', 'install macro for apt-get on ltsp-chroot';
+
+is join(', ', where( sub { 1 }, 'true')), 'true', 'Values for true predicate are included';
+is where( sub { 0 }, 'true'), (), 'Values for false predicate are ommitted';
 
 #
 # Runtime command tests
