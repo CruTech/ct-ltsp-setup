@@ -84,7 +84,7 @@ sub execute_cmd {
 }
 
 sub command_executor {
-    state $check = compile(ArrayRef[Any], Maybe[CodeRef]);
+    state $check = compile(ArrayRef, Maybe[CodeRef]);
     my ($command_list, $result_cb) = $check->(@_);
     my $results = [];
 
