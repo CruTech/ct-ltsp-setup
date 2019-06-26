@@ -6,7 +6,7 @@ our $VERSION = '0.0.1';
 use feature qw( state );
 
 use Type::Params qw( compile );
-use Types::Standard qw( slurpy Str ArrayRef HashRef CodeRef Num Any Maybe);
+use Types::Standard qw( slurpy Str ArrayRef HashRef CodeRef Num Any Maybe Bool);
 use Carp;
 
 use Log::Any qw( $log );
@@ -159,10 +159,10 @@ sub install_chroot {
 
 # Include commands if predicate is true
 sub where {
-    state $check = compile( CodeRef, slurpy ArrayRef[Any] );
+    state $check = compile( Bool, slurpy ArrayRef[Any] );
     my ($predicate, $commands) = $check->(@_);
 
-    return $commands->@* if $predicate->();
+    return $commands->@* if $predicate;
     ()
 }
 

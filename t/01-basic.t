@@ -58,8 +58,8 @@ is join(' ', @{install('foo')}), 'apt-get --yes install foo', 'install macro for
 
 is join(' ', @{install_chroot('foo')}), 'ltsp-chroot -m apt-get --yes install foo', 'install macro for apt-get on ltsp-chroot';
 
-is join(', ', where( sub { 1 }, 'true')), 'true', 'Values for true predicate are included';
-is where( sub { 0 }, 'true'), (), 'Values for false predicate are ommitted';
+is join(', ', where(1, 'true')), 'true', 'Values for true predicate are included';
+is where(0, 'true'), (), 'Values for false predicate are ommitted';
 
 #
 # Runtime command tests
