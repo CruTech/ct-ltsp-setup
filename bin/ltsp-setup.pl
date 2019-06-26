@@ -2,12 +2,15 @@
 use strict;
 use warnings;
 
+use feature qw( unicode_strings );
+
 use Try::Tiny;
 use Path::Tiny;
 
 # Add project lib to our @INC
 use FindBin qw( $Bin );
 use lib path($Bin)->parent->child('lib')->stringify;
+my $project_path = path($Bin)->parent;
 
 use ServerSetup qw( :all );
 
@@ -15,7 +18,7 @@ use ServerSetup qw( :all );
 use Log::Any qw( $log );
 use Log::Any::Adapter;
 use Log::Dispatch::Config;
-Log::Dispatch::Config->configure('./log.conf');
+Log::Dispatch::Config->configure("$project_path/log.conf");
 
 my $is_test = @ARGV ? 1 : 0;
 
