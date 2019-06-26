@@ -1,5 +1,7 @@
 # Crütech LTSP server setup scripts #
 
+Scripts for automating the setup of an LTSP server.
+
 # Instructions
 
 Current version targets Ubuntu 18 LTS versions.
