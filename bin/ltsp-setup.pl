@@ -16,7 +16,7 @@ use ServerSetup qw( :all );
 
 # Logging
 use Log::Any qw( $log );
-use Log::Any::Adapter;
+use Log::Any::Adapter ('Stdout');
 use Log::Dispatch::Config;
 Log::Dispatch::Config->configure("$project_path/log.conf");
 
