@@ -14,6 +14,7 @@ use Log::Any qw( $log );
 use Capture::Tiny ':all';
 use Path::Tiny;
 use Try::Tiny;
+use YAML::PP qw( Dump ); # Use for generating netplan files
 
 use Exporter::Shiny qw(
     execute_cmd
@@ -26,9 +27,15 @@ use Exporter::Shiny qw(
 
     install
     install_chroot
+    systemctl
     where
 
+    write_file
+    generate_static_netplan
+
     edit_file
+    dnsmasq_assert_gateway
+    dnsmasq_assert_nameserver
 );
 
 #
@@ -146,7 +153,7 @@ sub install {
     state $check = compile( slurpy ArrayRef[Str] );
     my ($cmd) = $check->(@_);
 
-    [qw(apt-get --yes install), @$cmd]
+    [qw(apt-get --yes install), $cmd->@*]
 }
 
 # install packages on ltsp chroot
@@ -154,7 +161,14 @@ sub install_chroot {
     state $check = compile( slurpy ArrayRef[Str] );
     my ($cmd) = $check->(@_);
 
-    [qw(ltsp-chroot -m apt-get --yes install), @$cmd]
+    [qw(ltsp-chroot -m apt-get --yes install), $cmd->@*]
+}
+
+sub systemctl {
+    state $check = compile( slurpy ArrayRef[Str] );
+    my ($cmd) = $check->(@_);
+
+    ['systemctl', $cmd->@*]
 }
 
 # Include commands if predicate is true
@@ -169,6 +183,35 @@ sub where {
 #
 # Run time routines
 #
+
+sub write_file {
+    state $check = compile( Str, CodeRef );
+    my ($file, $generator) = $check->(@_);
+
+    sub {
+        path($file)->spew( $generator->() )
+    }
+}
+
+sub generate_static_netplan {
+    my $config = {
+        network => {
+            version => 2,
+            ethernets => {
+                enp0s3 => {
+                    dhcp4 => 'no',
+                    addresses => ['192.168.67.253/24'],
+                    gateway4 => '192.168.67.254',
+                    nameservers => {
+                        addresses => ['192.168.67.254']
+                    }
+                }
+            }
+        }
+    };
+
+    Dump($config)
+}
 
 # edit file
 sub edit_file {
@@ -193,6 +236,32 @@ sub edit_file {
         };
 
         $result
+    }
+}
+
+#
+# Edit file filter functions
+#
+
+sub dnsmasq_assert_gateway {
+    my $cfg = shift;
+    if ($cfg =~ m/dhcp-option = 3 .+ $/gmx) {
+        # Update and enable existing
+        return $cfg =~ s/^(\s*) [#]? dhcp-option = 3 .+ $/$1dhcp-option=3,192.168.67.254/grmx
+    }
+    else {
+        return $cfg . "\n" . 'dhcp-option=3,192.168.67.254'
+    }
+}
+
+sub dnsmasq_assert_nameserver { 
+    my $cfg = shift;
+    if ($cfg =~ m/dhcp-option = 6 .+ $/gmx) {
+        # Update and enable existing
+        return $cfg =~ s/^(\s*) [#]? dhcp-option = 6 .+ $/$1dhcp-option=6,192.168.67.254/grmx
+    }
+    else {
+        return $cfg . "\n" . 'dhcp-option=6,192.168.67.254'
     }
 }
 

@@ -40,10 +40,29 @@ my @commands = (
     'ltsp-update-image',
 
     'ltsp-config dnsmasq --no-proxy-dhcp',
+    # Edit the generated config
+    edit_file('/etc/dnsmasq.d/ltsp-server-dnsmaq.conf', undef,
+        sub { shift =~ s/dhcp-range = .+ $/dhcp-range=192.168.67.10,192.168.67.110,8h/grmx },
+        \&dnsmasq_assert_gateway,
+        \&dnsmasq_assert_nameserver
+    ),
+
+    # Set static IP
+    write_file('/etc/netplan/50-static.yaml', \&generate_static_netplan),
+
+    # Remove systemd-resolved
+    systemctl(stop => 'systemd-resolved'),
+    systemctl(disable => 'systemd-resolved'),
+    'rm -v /etc/resolv.conf',
+    write_file('/etc/resolv.conf', sub { 'nameserver 192.168.67.254' }),
+
+    # ensure dnsmasq is run and will run on startup
+    systemctl(enable => 'dnsmasq'),
+    systemctl(start => 'dnsmasq'),
 );
 
 my $results = command_executor(\@commands, \&default_executor_logger) unless $is_test;
-$log->debug(join "\n", @commands) if $is_test;
+$log->debug(join "\n", map { ref($_) eq 'ARRAY' ? join(' ', $_->@*) : $_ } @commands) if $is_test;
 
 my $fail_count = 0;
 my $command_count = 0;

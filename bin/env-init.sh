@@ -1,7 +1,7 @@
 #! /usr/bin/env bash
 
-apt update
-apt -y install build-essential curl unzip
+apt-get update
+apt-get -y install build-essential curl unzip
 
 curl -L https://cpanmin.us | perl - App::cpanminus
 

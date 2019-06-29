@@ -1,0 +1,9 @@
+network:
+    version: 2
+    ethernets:
+        enp0s3:
+            dhcp4: no
+            addresses: [192.168.67.253/24]
+            gateway4: 192.168.67.254
+            nameservers:
+                addresses: [192.168.67.254]

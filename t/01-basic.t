@@ -18,8 +18,10 @@ use ServerSetup qw(
 
     install
     install_chroot
+    systemctl
     where
 
+    write_file
     edit_file
 );
 
@@ -54,9 +56,11 @@ is is_err(command_executor( [{}], undef)->[0]),                         1, "Exec
 #
 # Command macros
 #
-is join(' ', @{install('foo')}), 'apt-get --yes install foo', 'install macro for apt-get';
+is join(' ', install('foo')->@*), 'apt-get --yes install foo', 'install macro for apt-get';
 
-is join(' ', @{install_chroot('foo')}), 'ltsp-chroot -m apt-get --yes install foo', 'install macro for apt-get on ltsp-chroot';
+is join(' ', install_chroot('foo')->@*), 'ltsp-chroot -m apt-get --yes install foo', 'install macro for apt-get on ltsp-chroot';
+
+is join(' ', systemctl(start => 'foo')->@*), 'systemctl start foo', 'systemctl macro';
 
 is join(', ', where(1, 'true')), 'true', 'Values for true predicate are included';
 is where(0, 'true'), (), 'Values for false predicate are ommitted';
@@ -79,6 +83,11 @@ is where(0, 'true'), (), 'Values for false predicate are ommitted';
 
     is !is_err($editor->()), 1, 'Editor executed';
     is $out_file->slurp, 'bar', 'Editor edited content';
+
+    # Write file test
+    my $test_file = Path::Tiny->tempfile('test-write_file-XXXX');
+    write_file($test_file->stringify, sub { 'foo' })->();
+    is $test_file->slurp, 'foo', 'Write content to file with write_file closure';
 }
 
 
