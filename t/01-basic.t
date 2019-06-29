@@ -86,7 +86,7 @@ is where(0, 'true'), (), 'Values for false predicate are ommitted';
 
     # Write file test
     my $test_file = Path::Tiny->tempfile('test-write_file-XXXX');
-    write_file($test_file->stringify, sub { 'foo' })->();
+    ok !is_err( write_file($test_file->stringify, sub { 'foo' })->() ), "write_file executed with Ok result";
     is $test_file->slurp, 'foo', 'Write content to file with write_file closure';
 }
 

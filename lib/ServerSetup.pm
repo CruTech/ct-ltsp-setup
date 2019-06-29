@@ -189,7 +189,16 @@ sub write_file {
     my ($file, $generator) = $check->(@_);
 
     sub {
-        path($file)->spew( $generator->() )
+        my $result;
+        try {
+            path($file)->spew( $generator->() );
+            $result = Ok($file)
+        }
+        catch {
+            $result = Err("Failed writing to file '$file': $_")
+        };
+
+        $result
     }
 }
 
