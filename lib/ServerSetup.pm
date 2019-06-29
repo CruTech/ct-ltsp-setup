@@ -128,19 +128,24 @@ sub default_executor_logger {
 
     # Log results
     if (is_err($result)) {
-        $log->err('[Err] - ' . $result->{'err'})
+        $log->err('[Err] - ' . Dump( $result->{'err'} ))
     }
     else {
-        my ($exit, $stdout, $stderr, $cmd) = @{$result->{'ok'}}{qw(exit_code stdout stderr cmd)};
-        my $status = ($exit == 0) ? 'OK' : 'Err';
+        if (ref $result->{'ok'} eq 'HASH') {
+            my ($exit, $stdout, $stderr, $cmd) = @{$result->{'ok'}}{qw(exit_code stdout stderr cmd)};
+            my $status = ($exit == 0) ? 'OK' : 'Err';
 
-        $log->info(
-            sprintf('%3s |%s| stdout> %s', $status, join(' ', @$cmd), $stdout)
-        ) if defined $stdout and length $stdout > 0;
+            $log->info(
+                sprintf('%3s |%s| stdout> %s', $status, join(' ', @$cmd), $stdout)
+            ) if defined $stdout and length $stdout > 0;
 
-        $log->err(
-            sprintf('%3s %s stderr> %s', $status, join(' ', @$cmd), $stderr)
-        ) if defined $stderr and length $stderr > 0;
+            $log->err(
+                sprintf('%3s |%s| stderr> %s', $status, join(' ', @$cmd), $stderr)
+            ) if defined $stderr and length $stderr > 0;
+        }
+        else {
+            $log->info( sprintf(' OK result> %s', Dump( $result->{'ok'} )) )
+        }
     }
 }
 
