@@ -31,14 +31,18 @@ my @commands = (
     install(qw(
         --install-recommends
         ltsp-server-standalone
-        ltsp-client epoptes
+        epoptes
     )),
     'gpasswd -a ${SUDO_USER:-$USER} epoptes',
     q(ltsp-build-client --purge-chroot --mount-package-cache --extra-mirror 'http://ppa.launchpad.net/ts.sch.gr/ppa/ubuntu bionic main' --apt-keys '/etc/apt/trusted.gpg.d/ts_sch_gr_ubuntu_ppa.gpg' --late-packages epoptes-client),
 
-    install_chroot('ubuntu-mate-desktop'),
+    install_chroot(qw(
+        xubuntu-desktop
+        xfdesktop4
+    )),
     'ltsp-update-image',
 
+    # ltsqp dnsmasq config
     'ltsp-config dnsmasq --no-proxy-dhcp',
     # Edit the generated config
     edit_file('/etc/dnsmasq.d/ltsp-server-dnsmaq.conf', undef,
